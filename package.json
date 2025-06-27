@@ -17,6 +17,9 @@
   "repository": {
     "url": "https://github.com/drishit96/budgetsco-mcp-server"
   },
+  "bin": {
+    "budgetsco": "dist/server.js"
+  },
   "author": "Drishit Mitra",
   "type": "module",
   "license": "MIT",
