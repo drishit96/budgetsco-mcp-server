@@ -52,7 +52,7 @@ export async function callApi<T>({
         body: responseBody,
         status: response.status,
         statusText: response.statusText,
-      })
+      }),
     );
   }
 
