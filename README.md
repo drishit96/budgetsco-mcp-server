@@ -20,10 +20,9 @@ MCP Server for Budgetsco, enabling personal finance management through transacti
 ## Setup
 
 1. Clone the repository
-2. Create a `.env` file in the root directory with your Budgetsco access token and (optionally) the port:
+2. Create a `.env` file in the root directory with your Budgetsco access token:
    ```env
    BUDGETSCO_ACCESS_TOKEN='your_access_token_here'
-   PORT=9819 # Optional, defaults to 9819 if not set
    ```
 3. Install dependencies:
    ```bash
@@ -74,14 +73,11 @@ Available commands:
 - `npm run format`: Format code
 - `npm run test`: Run tests
 
-The server runs on port 9819 by default. You can override this by setting the `PORT` environment variable.
-
 ## Configuration
 
 ### Environment Variables
 
 - `BUDGETSCO_ACCESS_TOKEN` (required): Your Budgetsco personal access token
-- `PORT` (optional): The port to run the server on (default: 9819)
 
 ### Client Configuration
 
@@ -94,8 +90,7 @@ To use this MCP server with clients like Claude, add the following configuration
       "command": "npx",
       "args": ["@budgetsco/mcp"],
       "env": {
-        "BUDGETSCO_ACCESS_TOKEN": "<YOUR_TOKEN>",
-        "PORT": "9819" // Optional, set to your desired port
+        "BUDGETSCO_ACCESS_TOKEN": "<YOUR_TOKEN>"
       }
     }
   }

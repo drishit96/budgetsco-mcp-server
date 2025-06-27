@@ -24,14 +24,9 @@ registerRecurringTransactionTool(server);
 registerTargetTools(server);
 registerCurrencyTools(server);
 
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 9819;
 await server.start({
-  httpStream: {
-    port,
-  },
-  transportType: "httpStream",
+  transportType: "stdio",
 });
-console.log(`Server started successfully on port ${port}`);
 
 server.on("connect", (event) => {
   const session = event.session;
