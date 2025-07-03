@@ -9,7 +9,9 @@ export const TransactionType = z.object({
 });
 
 export const CustomCategoryActionSchema = z.object({
-  category: z.string().min(1, "Category name is required"),
+  categories: z
+    .array(z.string().min(1, "Category name cannot be empty"))
+    .min(1, "At least one category is required"),
   type: z.enum(["expense", "income", "investment"]),
 });
 

@@ -64,13 +64,13 @@ export const getCustomCategoriesTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export const createCustomCategoryTool: Tool<undefined, ToolParameters> = {
+export const createCustomCategoriesTool: Tool<undefined, ToolParameters> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
-    title: "Create a custom category.",
+    title: "Create custom categories.",
   },
-  description: "Create a new custom category for transactions.",
+  description: "Create new custom categories for transactions.",
   execute: async (args) => {
     const { data: validInput, errors } = parseCustomCategoryActionInput(args);
     if (errors) {
@@ -86,19 +86,19 @@ export const createCustomCategoryTool: Tool<undefined, ToolParameters> = {
     });
     return JSON.stringify(response.data);
   },
-  name: "createCustomCategory",
+  name: "createCustomCategories",
   parameters: CustomCategoryActionSchema.describe(
-    "Parameters for creating a custom category",
+    "Parameters for creating custom categories",
   ),
 };
 
-export const deleteCustomCategoryTool: Tool<undefined, ToolParameters> = {
+export const deleteCustomCategoriesTool: Tool<undefined, ToolParameters> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
-    title: "Delete a custom category.",
+    title: "Delete custom categories.",
   },
-  description: "Delete a custom category",
+  description: "Delete custom categories",
   execute: async (args) => {
     const { data: input, errors } = parseCustomCategoryActionInput(args);
     if (errors) {
@@ -111,21 +111,21 @@ export const deleteCustomCategoryTool: Tool<undefined, ToolParameters> = {
       method: "DELETE",
       path: "/categories/custom/delete",
       queryParams: {
-        category: [input.category],
+        category: input.categories,
         type: [input.type],
       },
     });
     return JSON.stringify(response.data);
   },
-  name: "deleteCustomCategory",
+  name: "deleteCustomCategories",
   parameters: CustomCategoryActionSchema.describe(
-    "Parameters for deleting a custom category",
+    "Parameters for deleting custom categories",
   ),
 };
 
 export function registerCategoriesTools(server: FastMCP) {
   server.addTool(getCategoriesByTypeTool);
   server.addTool(getCustomCategoriesTool);
-  server.addTool(createCustomCategoryTool);
-  server.addTool(deleteCustomCategoryTool);
+  server.addTool(createCustomCategoriesTool);
+  server.addTool(deleteCustomCategoriesTool);
 }
