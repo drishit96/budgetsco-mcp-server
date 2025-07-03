@@ -6,8 +6,8 @@ import * as apiUtils from "../../utils/api.utils.js";
 import { mockContext } from "../../utils/mock.utils.js";
 import * as schema from "./categories.schema.js";
 import {
-  createCustomCategoryTool,
-  deleteCustomCategoryTool,
+  createCustomCategoriesTool,
+  deleteCustomCategoriesTool,
   getCategoriesByTypeTool,
   getCustomCategoriesTool,
 } from "./categories.tools.js";
@@ -81,9 +81,12 @@ describe("categories.tools", () => {
     });
   });
 
-  describe("createCustomCategoryTool", () => {
+  describe("createCustomCategoriesTool", () => {
     it("should call /categories/custom/create with category details", async () => {
-      const mockInput = { category: "New Category", type: "expense" as const };
+      const mockInput = {
+        categories: ["New Category"],
+        type: "expense" as const,
+      };
       const mockResponse = { id: "123" };
       (schema.parseCustomCategoryActionInput as Mock).mockReturnValue({
         data: mockInput,
@@ -91,7 +94,7 @@ describe("categories.tools", () => {
       });
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
 
-      const result = await createCustomCategoryTool.execute(
+      const result = await createCustomCategoriesTool.execute(
         mockInput,
         mockContext,
       );
@@ -108,28 +111,31 @@ describe("categories.tools", () => {
     });
 
     it("should throw error if input is invalid", async () => {
-      const invalidInput = { category: "", type: "invalid" };
+      const invalidInput = { categories: [""], type: "invalid" };
       (schema.parseCustomCategoryActionInput as Mock).mockReturnValue({
         data: null,
-        errors: { category: "Category name is required" },
+        errors: { categories: "Category name is required" },
       });
 
       await expect(
-        createCustomCategoryTool.execute(invalidInput, mockContext),
+        createCustomCategoriesTool.execute(invalidInput, mockContext),
       ).rejects.toThrow("Invalid custom category input");
     });
   });
 
-  describe("deleteCustomCategoryTool", () => {
+  describe("deleteCustomCategoriesTool", () => {
     it("should call /categories/custom/delete with category details", async () => {
-      const mockInput = { category: "Old Category", type: "expense" as const };
+      const mockInput = {
+        categories: ["Old Category"],
+        type: "expense" as const,
+      };
       (schema.parseCustomCategoryActionInput as Mock).mockReturnValue({
         data: mockInput,
         errors: null,
       });
       (apiUtils.callApi as Mock).mockResolvedValue({ data: undefined });
 
-      const result = await deleteCustomCategoryTool.execute(
+      const result = await deleteCustomCategoriesTool.execute(
         mockInput,
         mockContext,
       );
@@ -141,7 +147,7 @@ describe("categories.tools", () => {
         method: "DELETE",
         path: "/categories/custom/delete",
         queryParams: {
-          category: [mockInput.category],
+          category: mockInput.categories,
           type: [mockInput.type],
         },
       });
@@ -149,14 +155,14 @@ describe("categories.tools", () => {
     });
 
     it("should throw error if input is invalid", async () => {
-      const invalidInput = { category: "", type: "invalid" };
+      const invalidInput = { categories: [""], type: "invalid" };
       (schema.parseCustomCategoryActionInput as Mock).mockReturnValue({
         data: null,
-        errors: { category: "Category name is required" },
+        errors: { categories: "Category name is required" },
       });
 
       await expect(
-        deleteCustomCategoryTool.execute(invalidInput, mockContext),
+        deleteCustomCategoriesTool.execute(invalidInput, mockContext),
       ).rejects.toThrow("Invalid custom category input");
     });
   });
