@@ -4,9 +4,9 @@ on:
     branches:
       - main
 jobs:
-  test:
+  release:
     environment: release
-    name: Test
+    name: Release
     strategy:
       fail-fast: true
       matrix:
@@ -22,10 +22,6 @@ jobs:
         with:
           fetch-depth: 0
       - name: setup node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-      - name: Setup NodeJS ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
