@@ -1,5 +1,6 @@
 import { FastMCP, Tool, ToolParameters } from "fastmcp";
 
+import { FastMCPSessionAuth } from "../../server.js";
 import { callApi } from "../../utils/api.utils.js";
 import {
   parseRecurringTransactionActions,
@@ -10,7 +11,10 @@ import {
   RecurringTransactionInputSchema,
 } from "./recurringTransaction.schema.js";
 
-export const getRecurringTransactionsTool: Tool<undefined, ToolParameters> = {
+export const getRecurringTransactionsTool: Tool<
+  FastMCPSessionAuth,
+  ToolParameters
+> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: true,
@@ -40,7 +44,10 @@ export const getRecurringTransactionsTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export const createRecurringTransactionTool: Tool<undefined, ToolParameters> = {
+export const createRecurringTransactionTool: Tool<
+  FastMCPSessionAuth,
+  ToolParameters
+> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -67,7 +74,10 @@ export const createRecurringTransactionTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export const editRecurringTransactionTool: Tool<undefined, ToolParameters> = {
+export const editRecurringTransactionTool: Tool<
+  FastMCPSessionAuth,
+  ToolParameters
+> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -94,36 +104,41 @@ export const editRecurringTransactionTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export const markRecurringTransactionDoneTool: Tool<undefined, ToolParameters> =
-  {
-    annotations: {
-      openWorldHint: false,
-      readOnlyHint: false,
-      title: "Mark Recurring Transaction as Done",
-    },
-    description: "Mark a recurring transaction as done for the current period",
-    execute: async (args) => {
-      const { data: transaction, errors } =
-        parseRecurringTransactionActions(args);
-      if (errors) {
-        throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
-      }
+export const markRecurringTransactionDoneTool: Tool<
+  FastMCPSessionAuth,
+  ToolParameters
+> = {
+  annotations: {
+    openWorldHint: false,
+    readOnlyHint: false,
+    title: "Mark Recurring Transaction as Done",
+  },
+  description: "Mark a recurring transaction as done for the current period",
+  execute: async (args) => {
+    const { data: transaction, errors } =
+      parseRecurringTransactionActions(args);
+    if (errors) {
+      throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
+    }
 
-      const response = await callApi({
-        body: transaction,
-        method: "POST",
-        path: "/recurringTransactions/markAsDone",
-      });
+    const response = await callApi({
+      body: transaction,
+      method: "POST",
+      path: "/recurringTransactions/markAsDone",
+    });
 
-      return JSON.stringify(response.data);
-    },
-    name: "markRecurringTransactionDone",
-    parameters: RecurringTransactionActionsSchema.describe(
-      "Parameters for marking a recurring transaction as done.",
-    ),
-  };
+    return JSON.stringify(response.data);
+  },
+  name: "markRecurringTransactionDone",
+  parameters: RecurringTransactionActionsSchema.describe(
+    "Parameters for marking a recurring transaction as done.",
+  ),
+};
 
-export const skipRecurringTransactionTool: Tool<undefined, ToolParameters> = {
+export const skipRecurringTransactionTool: Tool<
+  FastMCPSessionAuth,
+  ToolParameters
+> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -151,7 +166,10 @@ export const skipRecurringTransactionTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export const deleteRecurringTransactionTool: Tool<undefined, ToolParameters> = {
+export const deleteRecurringTransactionTool: Tool<
+  FastMCPSessionAuth,
+  ToolParameters
+> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -181,7 +199,9 @@ export const deleteRecurringTransactionTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export function registerRecurringTransactionTool(server: FastMCP) {
+export function registerRecurringTransactionTool(
+  server: FastMCP<FastMCPSessionAuth>,
+) {
   server.addTool(getRecurringTransactionsTool);
   server.addTool(createRecurringTransactionTool);
   server.addTool(editRecurringTransactionTool);

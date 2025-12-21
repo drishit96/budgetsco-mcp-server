@@ -1,6 +1,9 @@
 import { vi } from "vitest";
 
 export const mockContext = {
+  client: {
+    version: undefined,
+  },
   log: {
     debug: vi.fn(),
     error: vi.fn(),

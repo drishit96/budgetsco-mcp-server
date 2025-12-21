@@ -1,12 +1,13 @@
 import { FastMCP, Tool, ToolParameters } from "fastmcp";
 
+import { FastMCPSessionAuth } from "../../server.js";
 import { callApi } from "../../utils/api.utils.js";
 import {
   CurrencyPreferenceInputSchema,
   parseCurrencyPreferenceInput,
 } from "./currency.schema.js";
 
-export const getCurrencyTool: Tool<undefined, ToolParameters> = {
+export const getCurrencyTool: Tool<FastMCPSessionAuth, ToolParameters> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: true,
@@ -23,7 +24,7 @@ export const getCurrencyTool: Tool<undefined, ToolParameters> = {
   name: "getCurrency",
 };
 
-export const setCurrencyTool: Tool<undefined, ToolParameters> = {
+export const setCurrencyTool: Tool<FastMCPSessionAuth, ToolParameters> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -50,7 +51,7 @@ export const setCurrencyTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export function registerCurrencyTools(server: FastMCP) {
+export function registerCurrencyTools(server: FastMCP<FastMCPSessionAuth>) {
   server.addTool(getCurrencyTool);
   server.addTool(setCurrencyTool);
 }
