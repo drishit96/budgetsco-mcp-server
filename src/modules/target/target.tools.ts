@@ -1,5 +1,6 @@
 import { FastMCP, Tool, ToolParameters } from "fastmcp";
 
+import { FastMCPSessionAuth } from "../../server.js";
 import { callApi } from "../../utils/api.utils.js";
 import {
   BudgetInputSchema,
@@ -8,7 +9,7 @@ import {
   TargetFilterSchema,
 } from "./target.schema.js";
 
-export const getBudgetTool: Tool<undefined, ToolParameters> = {
+export const getBudgetTool: Tool<FastMCPSessionAuth, ToolParameters> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: true,
@@ -41,7 +42,7 @@ export const getBudgetTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export const setBudgetTool: Tool<undefined, ToolParameters> = {
+export const setBudgetTool: Tool<FastMCPSessionAuth, ToolParameters> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -66,7 +67,7 @@ export const setBudgetTool: Tool<undefined, ToolParameters> = {
   parameters: BudgetInputSchema.describe("Parameters for setting budget"),
 };
 
-export function registerTargetTools(server: FastMCP) {
+export function registerTargetTools(server: FastMCP<FastMCPSessionAuth>) {
   server.addTool(getBudgetTool);
   server.addTool(setBudgetTool);
 }

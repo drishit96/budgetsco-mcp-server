@@ -8,6 +8,8 @@ import { registerRecurringTransactionTool } from "./modules/recurringTransaction
 import { registerTargetTools } from "./modules/target/target.tools.js";
 import { registerTransactionsTools } from "./modules/transactions/transaction.tools.js";
 
+export type FastMCPSessionAuth = Record<string, unknown> | undefined;
+
 if (!process.env.BUDGETSCO_ACCESS_TOKEN) {
   throw new Error(
     "BUDGETSCO_ACCESS_TOKEN environment variable is not set. Please set it to your Budgetsco personal access token.",

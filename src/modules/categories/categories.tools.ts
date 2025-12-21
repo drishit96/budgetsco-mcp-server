@@ -1,5 +1,6 @@
 import { FastMCP, Tool, ToolParameters } from "fastmcp";
 
+import { FastMCPSessionAuth } from "../../server.js";
 import { callApi } from "../../utils/api.utils.js";
 import {
   CustomCategoryActionSchema,
@@ -8,63 +9,68 @@ import {
   TransactionType,
 } from "./categories.schema.js";
 
-export const getCategoriesByTypeTool: Tool<undefined, ToolParameters> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: true,
-    title: "Get all categories by type.",
-  },
-  description:
-    "Retrieve all categories of a specific type. Always use this tool to get categories before creating a transaction. If no categories match, create a new category.",
-  execute: async (args) => {
-    const validType = parseTransactionType(args);
-    if (!validType) {
-      throw new Error(`Invalid transaction type: ${JSON.stringify(args)}`);
-    }
+export const getCategoriesByTypeTool: Tool<FastMCPSessionAuth, ToolParameters> =
+  {
+    annotations: {
+      openWorldHint: false,
+      readOnlyHint: true,
+      title: "Get all categories by type.",
+    },
+    description:
+      "Retrieve all categories of a specific type. Always use this tool to get categories before creating a transaction. If no categories match, create a new category.",
+    execute: async (args) => {
+      const validType = parseTransactionType(args);
+      if (!validType) {
+        throw new Error(`Invalid transaction type: ${JSON.stringify(args)}`);
+      }
 
-    const response = await callApi<string[]>({
-      path: "/categories/get",
-      queryParams: {
-        type: [validType.type],
-      },
-    });
+      const response = await callApi<string[]>({
+        path: "/categories/get",
+        queryParams: {
+          type: [validType.type],
+        },
+      });
 
-    return JSON.stringify(response.data);
-  },
-  name: "getCategoriesByType",
-  parameters: TransactionType.describe(
-    "The transaction type to filter categories by",
-  ),
-};
+      return JSON.stringify(response.data);
+    },
+    name: "getCategoriesByType",
+    parameters: TransactionType.describe(
+      "The transaction type to filter categories by",
+    ),
+  };
 
-export const getCustomCategoriesTool: Tool<undefined, ToolParameters> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: true,
-    title: "Get all custom categories",
-  },
-  description: "Retrieve all custom categories created by the user",
-  execute: async (args) => {
-    const validType = parseTransactionType(args);
-    if (!validType) {
-      throw new Error(`Invalid transaction type: ${JSON.stringify(args)}`);
-    }
+export const getCustomCategoriesTool: Tool<FastMCPSessionAuth, ToolParameters> =
+  {
+    annotations: {
+      openWorldHint: false,
+      readOnlyHint: true,
+      title: "Get all custom categories",
+    },
+    description: "Retrieve all custom categories created by the user",
+    execute: async (args) => {
+      const validType = parseTransactionType(args);
+      if (!validType) {
+        throw new Error(`Invalid transaction type: ${JSON.stringify(args)}`);
+      }
 
-    const response = await callApi<string[]>({
-      path: "/categories/custom/get",
-      queryParams: {
-        type: [validType.type],
-      },
-    });
-    return JSON.stringify(response.data);
-  },
-  name: "getCustomCategories",
-  parameters: TransactionType.describe(
-    "The transaction type to filter categories by",
-  ),
-};
+      const response = await callApi<string[]>({
+        path: "/categories/custom/get",
+        queryParams: {
+          type: [validType.type],
+        },
+      });
+      return JSON.stringify(response.data);
+    },
+    name: "getCustomCategories",
+    parameters: TransactionType.describe(
+      "The transaction type to filter categories by",
+    ),
+  };
 
-export const createCustomCategoriesTool: Tool<undefined, ToolParameters> = {
+export const createCustomCategoriesTool: Tool<
+  FastMCPSessionAuth,
+  ToolParameters
+> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -92,7 +98,10 @@ export const createCustomCategoriesTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export const deleteCustomCategoriesTool: Tool<undefined, ToolParameters> = {
+export const deleteCustomCategoriesTool: Tool<
+  FastMCPSessionAuth,
+  ToolParameters
+> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -123,7 +132,7 @@ export const deleteCustomCategoriesTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export function registerCategoriesTools(server: FastMCP) {
+export function registerCategoriesTools(server: FastMCP<FastMCPSessionAuth>) {
   server.addTool(getCategoriesByTypeTool);
   server.addTool(getCustomCategoriesTool);
   server.addTool(createCustomCategoriesTool);

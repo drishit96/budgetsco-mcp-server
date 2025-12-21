@@ -1,5 +1,6 @@
 import { FastMCP, Tool, ToolParameters } from "fastmcp";
 
+import { FastMCPSessionAuth } from "../../server.js";
 import { callApi } from "../../utils/api.utils.js";
 import {
   parseTransactionDeleteInput,
@@ -10,7 +11,7 @@ import {
   TransactionInputSchema,
 } from "./transaction.schema.js";
 
-export const getTransactionsTool: Tool<undefined, ToolParameters> = {
+export const getTransactionsTool: Tool<FastMCPSessionAuth, ToolParameters> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: true,
@@ -43,7 +44,7 @@ export const getTransactionsTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export const createTransactionTool: Tool<undefined, ToolParameters> = {
+export const createTransactionTool: Tool<FastMCPSessionAuth, ToolParameters> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -70,7 +71,7 @@ export const createTransactionTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export const editTransactionTool: Tool<undefined, ToolParameters> = {
+export const editTransactionTool: Tool<FastMCPSessionAuth, ToolParameters> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -97,7 +98,7 @@ export const editTransactionTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export const deleteTransactionTool: Tool<undefined, ToolParameters> = {
+export const deleteTransactionTool: Tool<FastMCPSessionAuth, ToolParameters> = {
   annotations: {
     openWorldHint: false,
     readOnlyHint: false,
@@ -126,7 +127,7 @@ export const deleteTransactionTool: Tool<undefined, ToolParameters> = {
   ),
 };
 
-export function registerTransactionsTools(server: FastMCP) {
+export function registerTransactionsTools(server: FastMCP<FastMCPSessionAuth>) {
   server.addTool(getTransactionsTool);
   server.addTool(createTransactionTool);
   server.addTool(editTransactionTool);
