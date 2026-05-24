@@ -3,13 +3,12 @@ import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as apiUtils from "../../utils/api.utils.js";
-import { mockContext } from "../../utils/mock.utils.js";
 import * as schema from "./transaction.schema.js";
 import {
-  createTransactionTool,
-  deleteTransactionTool,
-  editTransactionTool,
-  getTransactionsTool,
+  createTransaction,
+  deleteTransaction,
+  editTransaction,
+  getTransactions,
 } from "./transaction.tools.js";
 
 vi.mock("../../utils/api.utils.js");
@@ -20,7 +19,7 @@ describe("transaction.tools", () => {
     vi.clearAllMocks();
   });
 
-  describe("getTransactionsTool", () => {
+  describe("getTransactions", () => {
     it("should call /transactions/get with filters and return data", async () => {
       const mockFilter = {
         categories: ["Food"],
@@ -32,7 +31,7 @@ describe("transaction.tools", () => {
       const mockResponse = [{ id: "txn1" }];
       (schema.parseTransactionFilter as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
-      const result = await getTransactionsTool.execute(mockFilter, mockContext);
+      const result = await getTransactions(mockFilter);
       expect(schema.parseTransactionFilter).toHaveBeenCalledWith(mockFilter);
       expect(apiUtils.callApi).toHaveBeenCalledWith({
         path: "/transactions/get",
@@ -51,13 +50,11 @@ describe("transaction.tools", () => {
         data: null,
         errors: { foo: "bad" },
       });
-      await expect(
-        getTransactionsTool.execute(invalid, mockContext),
-      ).rejects.toThrow("Invalid filter");
+      await expect(getTransactions(invalid)).rejects.toThrow("Invalid filter");
     });
   });
 
-  describe("createTransactionTool", () => {
+  describe("createTransaction", () => {
     it("should call /transactions/create with transaction and return data", async () => {
       const mockInput = {
         amount: 100,
@@ -69,10 +66,7 @@ describe("transaction.tools", () => {
       const mockResponse = { id: "txn2" };
       (schema.parseTransactionInput as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
-      const result = await createTransactionTool.execute(
-        mockInput,
-        mockContext,
-      );
+      const result = await createTransaction(mockInput);
       expect(schema.parseTransactionInput).toHaveBeenCalledWith(mockInput);
       expect(apiUtils.callApi).toHaveBeenCalledWith({
         body: mockInput,
@@ -87,13 +81,11 @@ describe("transaction.tools", () => {
         data: null,
         errors: { amount: "bad" },
       });
-      await expect(
-        createTransactionTool.execute(invalid, mockContext),
-      ).rejects.toThrow("Invalid input");
+      await expect(createTransaction(invalid)).rejects.toThrow("Invalid input");
     });
   });
 
-  describe("editTransactionTool", () => {
+  describe("editTransaction", () => {
     it("should call /transactions/edit with transaction and return data", async () => {
       const mockInput = {
         amount: 200,
@@ -105,7 +97,7 @@ describe("transaction.tools", () => {
       const mockResponse = { id: "txn3" };
       (schema.parseTransactionInput as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
-      const result = await editTransactionTool.execute(mockInput, mockContext);
+      const result = await editTransaction(mockInput);
       expect(schema.parseTransactionInput).toHaveBeenCalledWith(mockInput);
       expect(apiUtils.callApi).toHaveBeenCalledWith({
         body: mockInput,
@@ -120,22 +112,17 @@ describe("transaction.tools", () => {
         data: null,
         errors: { amount: "bad" },
       });
-      await expect(
-        editTransactionTool.execute(invalid, mockContext),
-      ).rejects.toThrow("Invalid input");
+      await expect(editTransaction(invalid)).rejects.toThrow("Invalid input");
     });
   });
 
-  describe("deleteTransactionTool", () => {
+  describe("deleteTransaction", () => {
     it("should call /transactions/delete with transactionId and return data", async () => {
       const mockInput = { transactionId: "txn123456789012" };
       const parsed = { data: mockInput, errors: null };
       (schema.parseTransactionDeleteInput as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: undefined });
-      const result = await deleteTransactionTool.execute(
-        mockInput,
-        mockContext,
-      );
+      const result = await deleteTransaction(mockInput);
       expect(schema.parseTransactionDeleteInput).toHaveBeenCalledWith(
         mockInput,
       );
@@ -152,9 +139,9 @@ describe("transaction.tools", () => {
         data: null,
         errors: { transactionId: "bad" },
       });
-      await expect(
-        deleteTransactionTool.execute(invalid, mockContext),
-      ).rejects.toThrow("Invalid transaction");
+      await expect(deleteTransaction(invalid)).rejects.toThrow(
+        "Invalid transaction",
+      );
     });
   });
 });

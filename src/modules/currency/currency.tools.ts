@@ -1,57 +1,67 @@
-import { FastMCP, Tool, ToolParameters } from "fastmcp";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import { FastMCPSessionAuth } from "../../server.js";
 import { callApi } from "../../utils/api.utils.js";
 import {
   CurrencyPreferenceInputSchema,
   parseCurrencyPreferenceInput,
 } from "./currency.schema.js";
 
-export const getCurrencyTool: Tool<FastMCPSessionAuth, ToolParameters> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: true,
-    title: "Get Currency",
-  },
-  description: "Get the current currency preference",
-  execute: async () => {
-    const response = await callApi({
-      path: "/currency/get",
-    });
+export async function getCurrency(): Promise<string> {
+  const response = await callApi({
+    path: "/currency/get",
+  });
 
-    return JSON.stringify(response.data);
-  },
-  name: "getCurrency",
-};
+  return JSON.stringify(response.data);
+}
 
-export const setCurrencyTool: Tool<FastMCPSessionAuth, ToolParameters> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: false,
-    title: "Set Currency",
-  },
-  description: "Set currency preference",
-  execute: async (args) => {
-    const { data: currency, errors } = parseCurrencyPreferenceInput(args);
-    if (errors) {
-      throw new Error(`Invalid input: ${JSON.stringify(errors)}`);
-    }
+export function registerCurrencyTools(server: McpServer) {
+  server.registerTool(
+    "getCurrency",
+    {
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+        readOnlyHint: true,
+      },
+      description: "Get the current currency preference",
+      title: "Get Currency",
+    },
+    async () => ({
+      content: [{ text: await getCurrency(), type: "text" }],
+    }),
+  );
 
-    const response = await callApi({
-      body: currency,
-      method: "POST",
-      path: "/currency/set",
-    });
+  server.registerTool(
+    "setCurrency",
+    {
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+        readOnlyHint: false,
+      },
+      description: "Set currency preference",
+      inputSchema: CurrencyPreferenceInputSchema,
+      title: "Set Currency",
+    },
+    async (args) => ({
+      content: [{ text: await setCurrency(args), type: "text" }],
+    }),
+  );
+}
 
-    return JSON.stringify(response.data);
-  },
-  name: "setCurrency",
-  parameters: CurrencyPreferenceInputSchema.describe(
-    "Parameters for setting currency preference",
-  ),
-};
+export async function setCurrency(args: unknown): Promise<string> {
+  const { data: currency, errors } = parseCurrencyPreferenceInput(args);
+  if (errors) {
+    throw new Error(`Invalid input: ${JSON.stringify(errors)}`);
+  }
 
-export function registerCurrencyTools(server: FastMCP<FastMCPSessionAuth>) {
-  server.addTool(getCurrencyTool);
-  server.addTool(setCurrencyTool);
+  const response = await callApi({
+    body: currency,
+    method: "POST",
+    path: "/currency/set",
+  });
+
+  return JSON.stringify(response.data);
 }

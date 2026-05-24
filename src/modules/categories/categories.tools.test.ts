@@ -3,16 +3,14 @@ import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as apiUtils from "../../utils/api.utils.js";
-import { mockContext } from "../../utils/mock.utils.js";
 import * as schema from "./categories.schema.js";
 import {
-  createCustomCategoriesTool,
-  deleteCustomCategoriesTool,
-  getCategoriesByTypeTool,
-  getCustomCategoriesTool,
+  createCustomCategories,
+  deleteCustomCategories,
+  getCategoriesByType,
+  getCustomCategories,
 } from "./categories.tools.js";
 
-// Mock the API and schema utilities
 vi.mock("../../utils/api.utils.js");
 vi.mock("./categories.schema.js");
 
@@ -21,17 +19,14 @@ describe("categories.tools", () => {
     vi.clearAllMocks();
   });
 
-  describe("getCategoriesByTypeTool", () => {
+  describe("getCategoriesByType", () => {
     it("should call /categories/get with type and return categories", async () => {
       const mockCategories = ["Food", "Transport"];
       const mockType = { type: "expense" as const };
       (schema.parseTransactionType as Mock).mockReturnValue(mockType);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockCategories });
 
-      const result = await getCategoriesByTypeTool.execute(
-        mockType,
-        mockContext,
-      );
+      const result = await getCategoriesByType(mockType);
 
       expect(schema.parseTransactionType).toHaveBeenCalledWith(mockType);
       expect(apiUtils.callApi).toHaveBeenCalledWith({
@@ -45,23 +40,20 @@ describe("categories.tools", () => {
       const invalidType = { type: "invalid" };
       (schema.parseTransactionType as Mock).mockReturnValue(null);
 
-      await expect(
-        getCategoriesByTypeTool.execute(invalidType, mockContext),
-      ).rejects.toThrow("Invalid transaction type");
+      await expect(getCategoriesByType(invalidType)).rejects.toThrow(
+        "Invalid transaction type",
+      );
     });
   });
 
-  describe("getCustomCategoriesTool", () => {
+  describe("getCustomCategories", () => {
     it("should call /categories/custom/get with type and return custom categories", async () => {
       const mockCategories = ["Custom Food", "Custom Transport"];
       const mockType = { type: "expense" as const };
       (schema.parseTransactionType as Mock).mockReturnValue(mockType);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockCategories });
 
-      const result = await getCustomCategoriesTool.execute(
-        mockType,
-        mockContext,
-      );
+      const result = await getCustomCategories(mockType);
 
       expect(schema.parseTransactionType).toHaveBeenCalledWith(mockType);
       expect(apiUtils.callApi).toHaveBeenCalledWith({
@@ -75,13 +67,13 @@ describe("categories.tools", () => {
       const invalidType = { type: "invalid" };
       (schema.parseTransactionType as Mock).mockReturnValue(null);
 
-      await expect(
-        getCustomCategoriesTool.execute(invalidType, mockContext),
-      ).rejects.toThrow("Invalid transaction type");
+      await expect(getCustomCategories(invalidType)).rejects.toThrow(
+        "Invalid transaction type",
+      );
     });
   });
 
-  describe("createCustomCategoriesTool", () => {
+  describe("createCustomCategories", () => {
     it("should call /categories/custom/create with category details", async () => {
       const mockInput = {
         categories: ["New Category"],
@@ -94,10 +86,7 @@ describe("categories.tools", () => {
       });
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
 
-      const result = await createCustomCategoriesTool.execute(
-        mockInput,
-        mockContext,
-      );
+      const result = await createCustomCategories(mockInput);
 
       expect(schema.parseCustomCategoryActionInput).toHaveBeenCalledWith(
         mockInput,
@@ -117,13 +106,13 @@ describe("categories.tools", () => {
         errors: { categories: "Category name is required" },
       });
 
-      await expect(
-        createCustomCategoriesTool.execute(invalidInput, mockContext),
-      ).rejects.toThrow("Invalid custom category input");
+      await expect(createCustomCategories(invalidInput)).rejects.toThrow(
+        "Invalid custom category input",
+      );
     });
   });
 
-  describe("deleteCustomCategoriesTool", () => {
+  describe("deleteCustomCategories", () => {
     it("should call /categories/custom/delete with category details", async () => {
       const mockInput = {
         categories: ["Old Category"],
@@ -135,10 +124,7 @@ describe("categories.tools", () => {
       });
       (apiUtils.callApi as Mock).mockResolvedValue({ data: undefined });
 
-      const result = await deleteCustomCategoriesTool.execute(
-        mockInput,
-        mockContext,
-      );
+      const result = await deleteCustomCategories(mockInput);
 
       expect(schema.parseCustomCategoryActionInput).toHaveBeenCalledWith(
         mockInput,
@@ -161,9 +147,9 @@ describe("categories.tools", () => {
         errors: { categories: "Category name is required" },
       });
 
-      await expect(
-        deleteCustomCategoriesTool.execute(invalidInput, mockContext),
-      ).rejects.toThrow("Invalid custom category input");
+      await expect(deleteCustomCategories(invalidInput)).rejects.toThrow(
+        "Invalid custom category input",
+      );
     });
   });
 });

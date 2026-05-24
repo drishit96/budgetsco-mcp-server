@@ -1,6 +1,5 @@
-import { FastMCP, Tool, ToolParameters } from "fastmcp";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import { FastMCPSessionAuth } from "../../server.js";
 import { callApi } from "../../utils/api.utils.js";
 import {
   parseRecurringTransactionActions,
@@ -11,201 +10,216 @@ import {
   RecurringTransactionInputSchema,
 } from "./recurringTransaction.schema.js";
 
-export const getRecurringTransactionsTool: Tool<
-  FastMCPSessionAuth,
-  ToolParameters
-> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: true,
-    title: "Get Recurring Transactions",
-  },
-  description: "Retrieve recurring transactions",
-  execute: async (args) => {
-    const { data: filter, errors } = parseRecurringTransactionFilter(args);
-    if (errors) {
-      throw new Error(`Invalid filter: ${JSON.stringify(errors)}`);
-    }
+export async function createRecurringTransaction(
+  args: unknown,
+): Promise<string> {
+  const { data: transaction, errors } = parseRecurringTransactionInput(args);
+  if (errors) {
+    throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
+  }
 
-    const searchParams: Record<string, string[]> = {};
-    if (filter.startDate) searchParams.startDate = [filter.startDate];
-    if (filter.endDate) searchParams.endDate = [filter.endDate];
+  const response = await callApi({
+    body: transaction,
+    method: "POST",
+    path: "/recurringTransactions/create",
+  });
 
-    const response = await callApi({
-      path: "/recurringTransactions/get",
-      queryParams: searchParams,
-    });
+  return JSON.stringify(response.data);
+}
 
-    return JSON.stringify(response.data);
-  },
-  name: "getRecurringTransactions",
-  parameters: RecurringTransactionFilterSchema.describe(
-    "You can filter by startDate and endDate to limit the results to a specific date range. If not provided, no default filter is applied and all recurring transactions are returned.",
-  ),
-};
+export async function deleteRecurringTransaction(
+  args: unknown,
+): Promise<string> {
+  const { data: transaction, errors } = parseRecurringTransactionActions(args);
+  if (errors) {
+    throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
+  }
 
-export const createRecurringTransactionTool: Tool<
-  FastMCPSessionAuth,
-  ToolParameters
-> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: false,
-    title: "Create Recurring Transaction",
-  },
-  description: "Create a recurring transaction",
-  execute: async (args) => {
-    const { data: transaction, errors } = parseRecurringTransactionInput(args);
-    if (errors) {
-      throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
-    }
+  const response = await callApi({
+    method: "DELETE",
+    path: "/recurringTransactions/delete",
+    queryParams: {
+      transactionId: [transaction.transactionId],
+    },
+  });
 
-    const response = await callApi({
-      body: transaction,
-      method: "POST",
-      path: "/recurringTransactions/create",
-    });
+  return JSON.stringify(response.data);
+}
 
-    return JSON.stringify(response.data);
-  },
-  name: "createRecurringTransaction",
-  parameters: RecurringTransactionInputSchema.describe(
-    "Parameters for creating a recurring transaction. Recurring transactions are used to automate the creation of transactions that occur on a regular basis, such as monthly bills or weekly salaries.",
-  ),
-};
+export async function editRecurringTransaction(args: unknown): Promise<string> {
+  const { data: transaction, errors } = parseRecurringTransactionInput(args);
+  if (errors) {
+    throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
+  }
 
-export const editRecurringTransactionTool: Tool<
-  FastMCPSessionAuth,
-  ToolParameters
-> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: false,
-    title: "Edit Recurring Transaction",
-  },
-  description: "Edit a recurring transaction",
-  execute: async (args) => {
-    const { data: transaction, errors } = parseRecurringTransactionInput(args);
-    if (errors) {
-      throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
-    }
+  const response = await callApi({
+    body: transaction,
+    method: "POST",
+    path: "/recurringTransactions/edit",
+  });
 
-    const response = await callApi({
-      body: transaction,
-      method: "POST",
-      path: "/recurringTransactions/edit",
-    });
+  return JSON.stringify(response.data);
+}
 
-    return JSON.stringify(response.data);
-  },
-  name: "editRecurringTransaction",
-  parameters: RecurringTransactionInputSchema.describe(
-    "Parameters for editing a recurring transaction. Recurring transactions are used to automate the creation of transactions that occur on a regular basis, such as monthly bills or weekly salaries.",
-  ),
-};
+export async function getRecurringTransactions(args: unknown): Promise<string> {
+  const { data: filter, errors } = parseRecurringTransactionFilter(args);
+  if (errors) {
+    throw new Error(`Invalid filter: ${JSON.stringify(errors)}`);
+  }
 
-export const markRecurringTransactionDoneTool: Tool<
-  FastMCPSessionAuth,
-  ToolParameters
-> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: false,
-    title: "Mark Recurring Transaction as Done",
-  },
-  description: "Mark a recurring transaction as done for the current period",
-  execute: async (args) => {
-    const { data: transaction, errors } =
-      parseRecurringTransactionActions(args);
-    if (errors) {
-      throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
-    }
+  const searchParams: Record<string, string[]> = {};
+  if (filter.startDate) searchParams.startDate = [filter.startDate];
+  if (filter.endDate) searchParams.endDate = [filter.endDate];
 
-    const response = await callApi({
-      body: transaction,
-      method: "POST",
-      path: "/recurringTransactions/markAsDone",
-    });
+  const response = await callApi({
+    path: "/recurringTransactions/get",
+    queryParams: searchParams,
+  });
 
-    return JSON.stringify(response.data);
-  },
-  name: "markRecurringTransactionDone",
-  parameters: RecurringTransactionActionsSchema.describe(
-    "Parameters for marking a recurring transaction as done.",
-  ),
-};
+  return JSON.stringify(response.data);
+}
 
-export const skipRecurringTransactionTool: Tool<
-  FastMCPSessionAuth,
-  ToolParameters
-> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: false,
-    title: "Skip Recurring Transaction",
-  },
-  description: "Skip a recurring transaction for the current period",
-  execute: async (args) => {
-    const { data: transaction, errors } =
-      parseRecurringTransactionActions(args);
-    if (errors) {
-      throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
-    }
+export async function markRecurringTransactionDone(
+  args: unknown,
+): Promise<string> {
+  const { data: transaction, errors } = parseRecurringTransactionActions(args);
+  if (errors) {
+    throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
+  }
 
-    const response = await callApi({
-      body: transaction,
-      method: "POST",
-      path: "/recurringTransactions/skip",
-    });
+  const response = await callApi({
+    body: transaction,
+    method: "POST",
+    path: "/recurringTransactions/markAsDone",
+  });
 
-    return JSON.stringify(response.data);
-  },
-  name: "skipRecurringTransaction",
-  parameters: RecurringTransactionActionsSchema.describe(
-    "Parameters for skipping a recurring transaction for the current period.",
-  ),
-};
+  return JSON.stringify(response.data);
+}
 
-export const deleteRecurringTransactionTool: Tool<
-  FastMCPSessionAuth,
-  ToolParameters
-> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: false,
-    title: "Delete Recurring Transaction",
-  },
-  description: "Delete a recurring transaction permanently",
-  execute: async (args) => {
-    const { data: transaction, errors } =
-      parseRecurringTransactionActions(args);
-    if (errors) {
-      throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
-    }
-
-    const response = await callApi({
-      method: "DELETE",
-      path: "/recurringTransactions/delete",
-      queryParams: {
-        transactionId: [transaction.transactionId],
+export function registerRecurringTransactionTool(server: McpServer) {
+  server.registerTool(
+    "getRecurringTransactions",
+    {
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+        readOnlyHint: true,
       },
-    });
+      description: "Retrieve recurring transactions",
+      inputSchema: RecurringTransactionFilterSchema,
+      title: "Get Recurring Transactions",
+    },
+    async (args) => ({
+      content: [{ text: await getRecurringTransactions(args), type: "text" }],
+    }),
+  );
 
-    return JSON.stringify(response.data);
-  },
-  name: "deleteRecurringTransaction",
-  parameters: RecurringTransactionActionsSchema.describe(
-    "Parameters for deleting a recurring transaction permanently.",
-  ),
-};
+  server.registerTool(
+    "createRecurringTransaction",
+    {
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+        readOnlyHint: false,
+      },
+      description: "Create a recurring transaction",
+      inputSchema: RecurringTransactionInputSchema,
+      title: "Create Recurring Transaction",
+    },
+    async (args) => ({
+      content: [{ text: await createRecurringTransaction(args), type: "text" }],
+    }),
+  );
 
-export function registerRecurringTransactionTool(
-  server: FastMCP<FastMCPSessionAuth>,
-) {
-  server.addTool(getRecurringTransactionsTool);
-  server.addTool(createRecurringTransactionTool);
-  server.addTool(editRecurringTransactionTool);
-  server.addTool(markRecurringTransactionDoneTool);
-  server.addTool(skipRecurringTransactionTool);
-  server.addTool(deleteRecurringTransactionTool);
+  server.registerTool(
+    "editRecurringTransaction",
+    {
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+        readOnlyHint: false,
+      },
+      description: "Edit a recurring transaction",
+      inputSchema: RecurringTransactionInputSchema,
+      title: "Edit Recurring Transaction",
+    },
+    async (args) => ({
+      content: [{ text: await editRecurringTransaction(args), type: "text" }],
+    }),
+  );
+
+  server.registerTool(
+    "markRecurringTransactionDone",
+    {
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+        readOnlyHint: false,
+      },
+      description:
+        "Mark a recurring transaction as done for the current period",
+      inputSchema: RecurringTransactionActionsSchema,
+      title: "Mark Recurring Transaction as Done",
+    },
+    async (args) => ({
+      content: [
+        { text: await markRecurringTransactionDone(args), type: "text" },
+      ],
+    }),
+  );
+
+  server.registerTool(
+    "skipRecurringTransaction",
+    {
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+        readOnlyHint: false,
+      },
+      description: "Skip a recurring transaction for the current period",
+      inputSchema: RecurringTransactionActionsSchema,
+      title: "Skip Recurring Transaction",
+    },
+    async (args) => ({
+      content: [{ text: await skipRecurringTransaction(args), type: "text" }],
+    }),
+  );
+
+  server.registerTool(
+    "deleteRecurringTransaction",
+    {
+      annotations: {
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+        readOnlyHint: false,
+      },
+      description: "Delete a recurring transaction permanently",
+      inputSchema: RecurringTransactionActionsSchema,
+      title: "Delete Recurring Transaction",
+    },
+    async (args) => ({
+      content: [{ text: await deleteRecurringTransaction(args), type: "text" }],
+    }),
+  );
+}
+
+export async function skipRecurringTransaction(args: unknown): Promise<string> {
+  const { data: transaction, errors } = parseRecurringTransactionActions(args);
+  if (errors) {
+    throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
+  }
+
+  const response = await callApi({
+    body: transaction,
+    method: "POST",
+    path: "/recurringTransactions/skip",
+  });
+
+  return JSON.stringify(response.data);
 }
