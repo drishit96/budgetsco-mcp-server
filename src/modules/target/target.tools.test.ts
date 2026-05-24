@@ -3,9 +3,8 @@ import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as apiUtils from "../../utils/api.utils.js";
-import { mockContext } from "../../utils/mock.utils.js";
 import * as schema from "./target.schema.js";
-import { getBudgetTool, setBudgetTool } from "./target.tools.js";
+import { getBudget, setBudget } from "./target.tools.js";
 
 vi.mock("../../utils/api.utils.js");
 vi.mock("./target.schema.js");
@@ -15,7 +14,7 @@ describe("target.tools", () => {
     vi.clearAllMocks();
   });
 
-  describe("getBudgetTool", () => {
+  describe("getBudget", () => {
     it("should call /target/get with filters and return data", async () => {
       const mockFilter = {
         breakDownByCategory: true,
@@ -26,7 +25,7 @@ describe("target.tools", () => {
       const mockResponse = { breakdown: { Food: 500, Rent: 500 }, total: 1000 };
       (schema.parseBudgetFilterInput as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
-      const result = await getBudgetTool.execute(mockFilter, mockContext);
+      const result = await getBudget(mockFilter);
       expect(schema.parseBudgetFilterInput).toHaveBeenCalledWith(mockFilter);
       expect(apiUtils.callApi).toHaveBeenCalledWith({
         path: "/target/get",
@@ -44,20 +43,18 @@ describe("target.tools", () => {
         data: null,
         errors: { foo: "bad" },
       });
-      await expect(getBudgetTool.execute(invalid, mockContext)).rejects.toThrow(
-        "Invalid filter",
-      );
+      await expect(getBudget(invalid)).rejects.toThrow("Invalid filter");
     });
   });
 
-  describe("setBudgetTool", () => {
+  describe("setBudget", () => {
     it("should call /target/set with budget and return data", async () => {
       const mockInput = { breakdown: { Food: 500, Rent: 500 } };
       const parsed = { data: { ...mockInput, total: 1000 }, errors: null };
       const mockResponse = { success: true };
       (schema.parseBudgetInput as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
-      const result = await setBudgetTool.execute(mockInput, mockContext);
+      const result = await setBudget(mockInput);
       expect(schema.parseBudgetInput).toHaveBeenCalledWith(mockInput);
       expect(apiUtils.callApi).toHaveBeenCalledWith({
         body: parsed.data,
@@ -72,9 +69,7 @@ describe("target.tools", () => {
         data: null,
         errors: { breakdown: "bad" },
       });
-      await expect(setBudgetTool.execute(invalid, mockContext)).rejects.toThrow(
-        "Invalid input",
-      );
+      await expect(setBudget(invalid)).rejects.toThrow("Invalid input");
     });
   });
 });

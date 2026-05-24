@@ -66,7 +66,7 @@ The server provides several tools for managing personal finances:
 
 Available commands:
 
-- `npm run dev`: Start the development server
+- `npm run dev`: Launch [MCP Inspector](https://github.com/modelcontextprotocol/inspector) against the server (`tsx src/server.ts`)
 - `npm run start`: Run the production server
 - `npm run build`: Build the project
 - `npm run lint`: Run linting checks
@@ -103,4 +103,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-Built with [FastMCP](https://github.com/punkpeye/fastmcp)
+Built with the official [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) (`@modelcontextprotocol/sdk`). The server uses stdio transport; log diagnostics to stderr only so stdout stays reserved for JSON-RPC.

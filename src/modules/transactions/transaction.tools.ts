@@ -1,6 +1,5 @@
-import { FastMCP, Tool, ToolParameters } from "fastmcp";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import { FastMCPSessionAuth } from "../../server.js";
 import { callApi } from "../../utils/api.utils.js";
 import {
   parseTransactionDeleteInput,
@@ -11,125 +10,144 @@ import {
   TransactionInputSchema,
 } from "./transaction.schema.js";
 
-export const getTransactionsTool: Tool<FastMCPSessionAuth, ToolParameters> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: true,
-    title: "Get Transactions",
-  },
-  description: "Retrieve a list of transactions",
-  execute: async (args) => {
-    const { data: filter, errors } = parseTransactionFilter(args);
-    if (errors) {
-      throw new Error(`Invalid filter: ${JSON.stringify(errors)}`);
-    }
+export async function createTransaction(args: unknown): Promise<string> {
+  const { data: transaction, errors } = parseTransactionInput(args);
+  if (errors) {
+    throw new Error(`Invalid input: ${JSON.stringify(errors)}`);
+  }
 
-    const searchParams: Record<string, string[]> = {};
-    if (filter.types) searchParams.type = filter.types;
-    if (filter.categories) searchParams.category = filter.categories;
-    if (filter.paymentModes) searchParams.paymentMode = [filter.paymentModes];
-    if (filter.startDate) searchParams.startDate = [filter.startDate];
-    if (filter.endDate) searchParams.endDate = [filter.endDate];
+  const response = await callApi({
+    body: transaction,
+    method: "POST",
+    path: "/transactions/create",
+  });
 
-    const response = await callApi({
-      path: "/transactions/get",
-      queryParams: searchParams,
-    });
+  return JSON.stringify(response.data);
+}
 
-    return JSON.stringify(response.data);
-  },
-  name: "getTransactions",
-  parameters: TransactionFilterSchema.describe(
-    "Filters to apply when retrieving transactions",
-  ),
-};
+export async function deleteTransaction(args: unknown): Promise<string> {
+  const { data: body, errors } = parseTransactionDeleteInput(args);
+  if (errors) {
+    throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
+  }
 
-export const createTransactionTool: Tool<FastMCPSessionAuth, ToolParameters> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: false,
-    title: "Create new transaction",
-  },
-  description: "Create new transaction.",
-  execute: async (args) => {
-    const { data: transaction, errors } = parseTransactionInput(args);
-    if (errors) {
-      throw new Error(`Invalid input: ${JSON.stringify(errors)}`);
-    }
+  const response = await callApi({
+    method: "DELETE",
+    path: "/transactions/delete",
+    queryParams: {
+      transactionId: [body.transactionId],
+    },
+  });
 
-    const response = await callApi({
-      body: transaction,
-      method: "POST",
-      path: "/transactions/create",
-    });
+  return JSON.stringify(response.data);
+}
 
-    return JSON.stringify(response.data);
-  },
-  name: "createTransaction",
-  parameters: TransactionInputSchema.describe(
-    "Parameters for creating a transaction",
-  ),
-};
+export async function editTransaction(args: unknown): Promise<string> {
+  const { data: transaction, errors } = parseTransactionInput(args);
+  if (errors) {
+    throw new Error(`Invalid input: ${JSON.stringify(errors)}`);
+  }
 
-export const editTransactionTool: Tool<FastMCPSessionAuth, ToolParameters> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: false,
-    title: "Edit transaction",
-  },
-  description: "Edit an existing transaction.",
-  execute: async (args) => {
-    const { data: transaction, errors } = parseTransactionInput(args);
-    if (errors) {
-      throw new Error(`Invalid input: ${JSON.stringify(errors)}`);
-    }
+  const response = await callApi({
+    body: transaction,
+    method: "POST",
+    path: "/transactions/edit",
+  });
 
-    const response = await callApi({
-      body: transaction,
-      method: "POST",
-      path: "/transactions/edit",
-    });
+  return JSON.stringify(response.data);
+}
 
-    return JSON.stringify(response.data);
-  },
-  name: "editTransaction",
-  parameters: TransactionInputSchema.describe(
-    "Parameters for editing an existing transaction",
-  ),
-};
+export async function getTransactions(args: unknown): Promise<string> {
+  const { data: filter, errors } = parseTransactionFilter(args);
+  if (errors) {
+    throw new Error(`Invalid filter: ${JSON.stringify(errors)}`);
+  }
 
-export const deleteTransactionTool: Tool<FastMCPSessionAuth, ToolParameters> = {
-  annotations: {
-    openWorldHint: false,
-    readOnlyHint: false,
-    title: "Delete transaction",
-  },
-  description: "Delete transaction permanently.",
-  execute: async (args) => {
-    const { data: body, errors } = parseTransactionDeleteInput(args);
-    if (errors) {
-      throw new Error(`Invalid transaction: ${JSON.stringify(errors)}`);
-    }
+  const searchParams: Record<string, string[]> = {};
+  if (filter.types) searchParams.type = filter.types;
+  if (filter.categories) searchParams.category = filter.categories;
+  if (filter.paymentModes) searchParams.paymentMode = [filter.paymentModes];
+  if (filter.startDate) searchParams.startDate = [filter.startDate];
+  if (filter.endDate) searchParams.endDate = [filter.endDate];
 
-    const response = await callApi({
-      method: "DELETE",
-      path: "/transactions/delete",
-      queryParams: {
-        transactionId: [body.transactionId],
+  const response = await callApi({
+    path: "/transactions/get",
+    queryParams: searchParams,
+  });
+
+  return JSON.stringify(response.data);
+}
+
+export function registerTransactionsTools(server: McpServer) {
+  server.registerTool(
+    "getTransactions",
+    {
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+        readOnlyHint: true,
       },
-    });
+      description: "Retrieve a list of transactions",
+      inputSchema: TransactionFilterSchema,
+      title: "Get Transactions",
+    },
+    async (args) => ({
+      content: [{ text: await getTransactions(args), type: "text" }],
+    }),
+  );
 
-    return JSON.stringify(response.data);
-  },
-  name: "deleteTransaction",
-  parameters: TransactionDeleteInputSchema.describe(
-    "Parameters for deleting a transaction",
-  ),
-};
+  server.registerTool(
+    "createTransaction",
+    {
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+        readOnlyHint: false,
+      },
+      description: "Create new transaction.",
+      inputSchema: TransactionInputSchema,
+      title: "Create new transaction",
+    },
+    async (args) => ({
+      content: [{ text: await createTransaction(args), type: "text" }],
+    }),
+  );
 
-export function registerTransactionsTools(server: FastMCP<FastMCPSessionAuth>) {
-  server.addTool(getTransactionsTool);
-  server.addTool(createTransactionTool);
-  server.addTool(editTransactionTool);
-  server.addTool(deleteTransactionTool);
+  server.registerTool(
+    "editTransaction",
+    {
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+        readOnlyHint: false,
+      },
+      description: "Edit an existing transaction.",
+      inputSchema: TransactionInputSchema,
+      title: "Edit transaction",
+    },
+    async (args) => ({
+      content: [{ text: await editTransaction(args), type: "text" }],
+    }),
+  );
+
+  server.registerTool(
+    "deleteTransaction",
+    {
+      annotations: {
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+        readOnlyHint: false,
+      },
+      description: "Delete transaction permanently.",
+      inputSchema: TransactionDeleteInputSchema,
+      title: "Delete transaction",
+    },
+    async (args) => ({
+      content: [{ text: await deleteTransaction(args), type: "text" }],
+    }),
+  );
 }

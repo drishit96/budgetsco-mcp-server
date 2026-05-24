@@ -3,15 +3,14 @@ import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as apiUtils from "../../utils/api.utils.js";
-import { mockContext } from "../../utils/mock.utils.js";
 import * as schema from "./recurringTransaction.schema.js";
 import {
-  createRecurringTransactionTool,
-  deleteRecurringTransactionTool,
-  editRecurringTransactionTool,
-  getRecurringTransactionsTool,
-  markRecurringTransactionDoneTool,
-  skipRecurringTransactionTool,
+  createRecurringTransaction,
+  deleteRecurringTransaction,
+  editRecurringTransaction,
+  getRecurringTransactions,
+  markRecurringTransactionDone,
+  skipRecurringTransaction,
 } from "./recurringTransaction.tools.js";
 
 vi.mock("../../utils/api.utils.js");
@@ -22,17 +21,14 @@ describe("recurringTransaction.tools", () => {
     vi.clearAllMocks();
   });
 
-  describe("getRecurringTransactionsTool", () => {
+  describe("getRecurringTransactions", () => {
     it("should call /recurringTransactions/get with filters and return data", async () => {
       const mockFilter = { endDate: "2024-12-31", startDate: "2024-01-01" };
       const parsed = { data: mockFilter, errors: null };
       const mockResponse = [{ id: "abc123" }];
       (schema.parseRecurringTransactionFilter as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
-      const result = await getRecurringTransactionsTool.execute(
-        mockFilter,
-        mockContext,
-      );
+      const result = await getRecurringTransactions(mockFilter);
       expect(schema.parseRecurringTransactionFilter).toHaveBeenCalledWith(
         mockFilter,
       );
@@ -51,13 +47,13 @@ describe("recurringTransaction.tools", () => {
         data: null,
         errors: { foo: "bad" },
       });
-      await expect(
-        getRecurringTransactionsTool.execute(invalid, mockContext),
-      ).rejects.toThrow("Invalid filter");
+      await expect(getRecurringTransactions(invalid)).rejects.toThrow(
+        "Invalid filter",
+      );
     });
   });
 
-  describe("createRecurringTransactionTool", () => {
+  describe("createRecurringTransaction", () => {
     it("should call /recurringTransactions/create with transaction", async () => {
       const mockInput = {
         amount: 100,
@@ -71,10 +67,7 @@ describe("recurringTransaction.tools", () => {
       const mockResponse = { id: "rec1" };
       (schema.parseRecurringTransactionInput as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
-      const result = await createRecurringTransactionTool.execute(
-        mockInput,
-        mockContext,
-      );
+      const result = await createRecurringTransaction(mockInput);
       expect(schema.parseRecurringTransactionInput).toHaveBeenCalledWith(
         mockInput,
       );
@@ -91,13 +84,13 @@ describe("recurringTransaction.tools", () => {
         data: null,
         errors: { amount: "bad" },
       });
-      await expect(
-        createRecurringTransactionTool.execute(invalid, mockContext),
-      ).rejects.toThrow("Invalid transaction");
+      await expect(createRecurringTransaction(invalid)).rejects.toThrow(
+        "Invalid transaction",
+      );
     });
   });
 
-  describe("editRecurringTransactionTool", () => {
+  describe("editRecurringTransaction", () => {
     it("should call /recurringTransactions/edit with transaction", async () => {
       const mockInput = {
         amount: 200,
@@ -111,10 +104,7 @@ describe("recurringTransaction.tools", () => {
       const mockResponse = { id: "rec2" };
       (schema.parseRecurringTransactionInput as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
-      const result = await editRecurringTransactionTool.execute(
-        mockInput,
-        mockContext,
-      );
+      const result = await editRecurringTransaction(mockInput);
       expect(schema.parseRecurringTransactionInput).toHaveBeenCalledWith(
         mockInput,
       );
@@ -131,23 +121,20 @@ describe("recurringTransaction.tools", () => {
         data: null,
         errors: { amount: "bad" },
       });
-      await expect(
-        editRecurringTransactionTool.execute(invalid, mockContext),
-      ).rejects.toThrow("Invalid transaction");
+      await expect(editRecurringTransaction(invalid)).rejects.toThrow(
+        "Invalid transaction",
+      );
     });
   });
 
-  describe("markRecurringTransactionDoneTool", () => {
+  describe("markRecurringTransactionDone", () => {
     it("should call /recurringTransactions/markAsDone with transactionId", async () => {
       const mockInput = { transactionId: "recurring123456" };
       const parsed = { data: mockInput, errors: null };
       const mockResponse = { success: true };
       (schema.parseRecurringTransactionActions as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
-      const result = await markRecurringTransactionDoneTool.execute(
-        mockInput,
-        mockContext,
-      );
+      const result = await markRecurringTransactionDone(mockInput);
       expect(schema.parseRecurringTransactionActions).toHaveBeenCalledWith(
         mockInput,
       );
@@ -164,26 +151,20 @@ describe("recurringTransaction.tools", () => {
         data: null,
         errors: { transactionId: "bad" },
       });
-      const { markRecurringTransactionDoneTool } = await import(
-        "./recurringTransaction.tools.js"
+      await expect(markRecurringTransactionDone(invalid)).rejects.toThrow(
+        "Invalid transaction",
       );
-      await expect(
-        markRecurringTransactionDoneTool.execute(invalid, mockContext),
-      ).rejects.toThrow("Invalid transaction");
     });
   });
 
-  describe("skipRecurringTransactionTool", () => {
+  describe("skipRecurringTransaction", () => {
     it("should call /recurringTransactions/skip with transactionId", async () => {
       const mockInput = { transactionId: "recurring123456" };
       const parsed = { data: mockInput, errors: null };
       const mockResponse = { success: true };
       (schema.parseRecurringTransactionActions as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: mockResponse });
-      const result = await skipRecurringTransactionTool.execute(
-        mockInput,
-        mockContext,
-      );
+      const result = await skipRecurringTransaction(mockInput);
       expect(schema.parseRecurringTransactionActions).toHaveBeenCalledWith(
         mockInput,
       );
@@ -200,25 +181,19 @@ describe("recurringTransaction.tools", () => {
         data: null,
         errors: { transactionId: "bad" },
       });
-      const { skipRecurringTransactionTool } = await import(
-        "./recurringTransaction.tools.js"
+      await expect(skipRecurringTransaction(invalid)).rejects.toThrow(
+        "Invalid transaction",
       );
-      await expect(
-        skipRecurringTransactionTool.execute(invalid, mockContext),
-      ).rejects.toThrow("Invalid transaction");
     });
   });
 
-  describe("deleteRecurringTransactionTool", () => {
+  describe("deleteRecurringTransaction", () => {
     it("should call /recurringTransactions/delete with transactionId", async () => {
       const mockInput = { transactionId: "recurring123456" };
       const parsed = { data: mockInput, errors: null };
       (schema.parseRecurringTransactionActions as Mock).mockReturnValue(parsed);
       (apiUtils.callApi as Mock).mockResolvedValue({ data: undefined });
-      const result = await deleteRecurringTransactionTool.execute(
-        mockInput,
-        mockContext,
-      );
+      const result = await deleteRecurringTransaction(mockInput);
       expect(schema.parseRecurringTransactionActions).toHaveBeenCalledWith(
         mockInput,
       );
@@ -235,9 +210,9 @@ describe("recurringTransaction.tools", () => {
         data: null,
         errors: { transactionId: "bad" },
       });
-      await expect(
-        deleteRecurringTransactionTool.execute(invalid, mockContext),
-      ).rejects.toThrow("Invalid transaction");
+      await expect(deleteRecurringTransaction(invalid)).rejects.toThrow(
+        "Invalid transaction",
+      );
     });
   });
 });
