@@ -8,7 +8,7 @@
     "start": "tsx src/server.ts",
     "dev": "npx @modelcontextprotocol/inspector tsx src/server.ts",
     "lint": "prettier --check . && eslint . && tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run src",
     "format": "prettier --write . && eslint --fix ."
   },
   "keywords": [
@@ -59,7 +59,7 @@
     "@eslint/js": "^10.0.1",
     "@modelcontextprotocol/inspector": "^2.6.0",
     "@tsconfig/node22": "^22.0.6",
-    "@types/node": "^22.20.2",
+    "@types/node": "^26.5.1",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-perfectionist": "^5.11.0",
@@ -68,8 +68,9 @@
     "semantic-release": "^25.0.9",
     "shx": "^0.4.0",
     "tsx": "^4.23.13",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.0",
-    "vitest": "^3.2.7"
+    "vite": "^8.3.0",
+    "vitest": "^5.0.0"
   }
 }
